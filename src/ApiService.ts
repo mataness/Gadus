@@ -1,7 +1,7 @@
 import { delay } from "@azure/ms-rest-js";
 import express from "express";
 import { BotService, BotStartupParameters, BotStartupResult } from "./BotService";
-import { RecognizedFace, getRecognizedFaceRepository } from "./Persistency/RecognizedFaceRepository";
+import { RecognizedFace, getRecognizedFaceRepositoryAsync } from "./Persistency/RecognizedFaceRepository";
 import { Client } from "whatsapp-web.js";
 import { WhatsAppMessagingUtils } from "./Infra/Utilities/WhatsAppMessagingUtils";
 
@@ -75,7 +75,7 @@ export class ApiService {
 
     private addFaceApi() {
         this._app.get('/api/faces', async (req, res) => {
-            const facesRepo = getRecognizedFaceRepository();
+            const facesRepo = await getRecognizedFaceRepositoryAsync();
 
             let allFaces = await facesRepo.listAllAsync();
             let faces = await this.mapToFaceResponseModel(allFaces, this._botStartupResult.whatsAppClient);

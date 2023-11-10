@@ -9,7 +9,7 @@ import { FaceRecognitionMessageHandler } from "./MessageHandlers/FaceRecognition
 import { FaceRecognitionTrainingMessageHandler } from "./MessageHandlers/FaceRecognition/FaceRecognitionTrainingMessageHandler";
 import { ManagementMessageHandler, StopBotRequestErrorCde as StopBotRequestErrorCode } from "./MessageHandlers/ManagementMessageHandler";
 import { IMessageSourceScopeRepository, getMessageSourceScopeRepository } from "./Persistency/MessageSourceScopeRepository";
-import { IRecognizedFaceRepository, getRecognizedFaceRepository } from "./Persistency/RecognizedFaceRepository";
+import { IRecognizedFaceRepository, getRecognizedFaceRepositoryAsync } from "./Persistency/RecognizedFaceRepository";
 import { Client } from "whatsapp-web.js";
 import { FaceManagementCommand, IFaceRecognitionManagementCommandHandler, getCommandHandlers } from "./MessageHandlers/FaceRecognition/FaceRecognitionManagementCommandHandler";
 
@@ -36,7 +36,7 @@ export class BotService {
         initializeStorageService(parameters.AzureStorageAccountName, parameters.AzureStorageAccountKey);
 
         let whatsAppClient = WhatsAppClient.getInstance();
-        let facesRepo = await getRecognizedFaceRepository();
+        let facesRepo = await getRecognizedFaceRepositoryAsync();
         let scopesRepo = await getMessageSourceScopeRepository();
         let faceRecognitionClient = new AzureFaceRecognitionClient(parameters.AzureFaceEndoint, parameters.AzureFaceApiKey);
         let commandHandlers = getCommandHandlers(faceRecognitionClient, facesRepo, scopesRepo);
@@ -47,7 +47,7 @@ export class BotService {
             new FaceRecognitionMessageHandler(faceRecognitionClient, facesRepo),
             faceMgmtHandler,
             new FaceRecognitionDestinationHandshakeMessageHandler(facesRepo),
-            new ManagementMessageHandler()]);
+            new ManagementMessageHandler(scopesRepo)]);
 
         whatsAppClient.on('message_create', async message => {
             try {
