@@ -2,7 +2,12 @@ import { Cache, CacheClass } from "memory-cache";
 import { TableEntity, odata } from "@azure/data-tables";
 import { AzStorageTableClient } from "../Infra/AzureStorage/AzStorageTableClient";
 
-export const getRecognizedFaceRepository = () => new MemCacheRecognizedFaceRepository(new RecognizedFaceRepository());
+export const getRecognizedFaceRepositoryAsync = async () => {
+    let repo = new RecognizedFaceRepository();
+    await repo.createTableAsync();
+
+    return new MemCacheRecognizedFaceRepository(repo);
+};
 
 const cachingInterval = 30000;
 
@@ -108,6 +113,10 @@ export class MemCacheRecognizedFaceRepository implements IRecognizedFaceReposito
 export class RecognizedFaceRepository implements IRecognizedFaceRepository {
     constructor() {
         this._tableClient = new AzStorageTableClient("faces");
+    }
+
+    public async createTableAsync() {
+        return await this._tableClient.createTableAsync();
     }
 
     public async addOrUpdateAsync(face: RecognizedFace) {

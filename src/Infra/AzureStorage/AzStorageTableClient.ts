@@ -10,6 +10,9 @@ export class AzStorageTableClient<T extends TableEntity> {
         this._tableClient = new TableClient(`https://${credentials.name}.table.core.windows.net`, tableName, credentials);
     }
 
+    public async createTableAsync() {
+        await this._tableClient.createTable();
+    }
     public async addOrUpdateAsync(entity: T) {
         await this._tableClient.upsertEntity(entity, 'Replace');
     }

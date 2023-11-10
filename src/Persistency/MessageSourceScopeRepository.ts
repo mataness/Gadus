@@ -20,7 +20,12 @@ export const addScopeIfDoesntExistAsync = async (scopesRepo: IMessageSourceScope
     }
 }
 
-export const getMessageSourceScopeRepository = () => new MemCacheSourceScopeRepository(new MessageSourceScopeRepository());
+export const getMessageSourceScopeRepository = async () => {
+    let repo = new MessageSourceScopeRepository();
+    await repo.createTableAsync();
+
+    return new MemCacheSourceScopeRepository(repo);
+}
 
 
 export type MessageSourceScopeType = "face-recognition" | "bot-management" | "face-recognition-management" | "face-owner";
@@ -78,6 +83,10 @@ export class MemCacheSourceScopeRepository implements IMessageSourceScopeReposit
 export class MessageSourceScopeRepository implements IMessageSourceScopeRepository {
     constructor() {
         this._tableClient = new AzStorageTableClient("scopes");
+    }
+
+    public async createTableAsync() {
+        return await this._tableClient.createTableAsync();
     }
 
     public async addOrUpdateAsync(scope: MessageSourceScope) {
