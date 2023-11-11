@@ -29,3 +29,18 @@ You will need to get the source chat ID and destination chat ID, which cannot be
 3. To add the face: !fmanage add {owner WhatsAppNumber e.g. 972544123456} {Face friendly name e.g. John} {source WhatsApp chat ID e.g. 12345676799@g.us} {destination WhatsApp chat ID e.g. 123456762323799@g.us}
 4. The bot will reply that the face was added
 5. Now to train the bot on the newly added face, send the bot clear pictures of the person. The person face should be clear and the pictures should not contain faces of any other person.
+
+## Known issues
+There's a known issue with the underlying whatsapp-web.js library that fails to forward messages, https://github.com/pedroslopez/whatsapp-web.js/issues/2426 .
+The temp fix for the issue is manually editing the library code. Go to node_modules -> whatsapp-web.js -> src -> structures -> Message.js
+Search for line 385 and replace the implementation of the forward(chat) method with:
+```
+const chatId = typeof chat === 'string' ? chat : chat.id._serialized;
+
+    await this.client.pupPage.evaluate(async (msgId, chatId) => {
+     let msg = window.Store.Msg.get(msgId);
+     let chat = window.Store.Chat.get(chatId);
+     window.Store.Chat.forwardMessagesToChats([msg],[chat]);
+     
+    }, this.id._serialized, chatId);
+```
