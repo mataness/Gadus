@@ -7,6 +7,7 @@ Face recognition bot for WhatsApp that forwards images with detected faces to an
 3. Run tsc (compile the typscript code)
 4. Run node assets/index.js --AzureFaceApiKey "FaceApiKey" --AzureFaceEndoint "https://{yourface endpoint}.cognitiveservices.azure.com/" --AzureStorageAccountKey "Storage account key" --AzureStorageAccountName "Storage account name"
 5. Check the running node application console logs, it should give you a URL to scan QR code, you need to scan the QR code with the mobile phone connected to the WhatsApp account which the bot will use
+6. Once the bot is running, send a '!ping' message to the bot to make sure its online. If the bot is running on your WhatsApp number, just send the message to yourself.
 
 ## Setting up face recogition
 
