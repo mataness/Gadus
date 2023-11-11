@@ -24,7 +24,7 @@ export class FaceRecognitionManagementMessageHandler implements IWhatsAppMessage
     }
 
     public async handleAsync(message: Message, scope: MessageSourceScope): Promise<boolean> {
-        if (!(((message.from == WhatsAppClient.getInstance().info.wid._serialized) || (scope && scope.scopes.includes("bot-management"))) && message.body && message.body.startsWith("!fmanage"))) {
+        if (!((message.fromMe || (scope && scope.scopes.includes("bot-management"))) && message.body && message.body.startsWith("!fmanage"))) {
             return false;
         }
 
