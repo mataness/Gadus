@@ -42,7 +42,10 @@ export class AddCommandHandler implements IFaceRecognitionManagementCommandHandl
         const newFace = (await this.handleWithoutReplyAsync(commandPayload)) as RecognizedFace;
 
         await WhatsAppMessagingUtils.setTypingAndReplyAsync(message, `Added. To configure the destination chat which will receive the message, make sure the bot is in the destination chat group and let the face owner type the following command in the destination chat:`, 6 * 1000);
-        await WhatsAppMessagingUtils.setTypingAndSendAsync(await message.getChat(), `${connectDestinationChatCommand} ${newFace.faceName} ${newFace.authCode}`, 2 * 1000);
+        
+        if(newFace.authCode) {
+            await WhatsAppMessagingUtils.setTypingAndSendAsync(await message.getChat(), `${connectDestinationChatCommand} ${newFace.faceName} ${newFace.authCode}`, 2 * 1000);
+        }
     }
 
     public async handleWithoutReplyAsync(commandPayload: string[]): Promise<any> {
