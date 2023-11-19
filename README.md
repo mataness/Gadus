@@ -24,8 +24,8 @@ Face recognition bot for WhatsApp that forwards images with detected faces to an
 ### Add new face for recognition
 Send the following command messages to the bot to add new face.
 You will need to get the source chat ID and destination chat ID, which cannot be seen through WhatsApp standard UI, so we will use the bot to get them by running the '!listchat {chat name}' command:
-1. !listchats {source chat name} - e.g. '!listchats הגן של שולה'
-2. !listchats {destination chat name} e.g. '!listchats תמונות של עומר'
+1. !searchchat {source chat name} - e.g. '!listchats הגן של שולה'
+2. !searchchat {destination chat name} e.g. '!listchats תמונות של עומר'
 3. To add the face: !fmanage add {owner WhatsAppNumber e.g. 972544123456} {Face friendly name e.g. John} {source WhatsApp chat ID e.g. 12345676799@g.us} {destination WhatsApp chat ID e.g. 123456762323799@g.us}
 4. The bot will reply that the face was added
 5. Now to train the bot on the newly added face, send the bot clear pictures of the person. The person face should be clear and the pictures should not contain faces of any other person.
