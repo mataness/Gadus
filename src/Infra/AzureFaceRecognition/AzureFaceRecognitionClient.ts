@@ -149,12 +149,3 @@ export class AzureFaceRecognitionClient {
     private readonly _faceClient: FaceClient;
     private readonly _detectionThrottled: ((arg1: NodeJS.ReadableStream, arg2: string) => Promise<string[]>) & { withOptions: (options: Bottleneck.JobOptions, arg1: NodeJS.ReadableStream, arg2: string) => Promise<string[]>; };
 }
-
-
-/*const detector = new AzureFaceRecognitionClient();
-const h = StringUtils.hash("120363026260855167@g.us");
-console.log(h);
-detector.getGroupsAsync().then(groups => {
-    console.log(groups);
-})
-*/
