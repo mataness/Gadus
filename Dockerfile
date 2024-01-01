@@ -7,5 +7,4 @@ RUN npm install && npm install typescript -g
 COPY src/ ./src
 COPY models/ ./models
 RUN tsc
-EXPOSE 3000
 CMD [ "node", "assets/index.js"]
