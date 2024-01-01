@@ -1,14 +1,14 @@
 import { Message } from "whatsapp-web.js";
-import { AzureFaceRecognitionClient } from "../../Infra/AzureFaceRecognition/AzureFaceRecognitionClient";
 import { RecognizedFace as RecognizedFace, IRecognizedFaceRepository } from "../../Persistency/RecognizedFaceRepository";
 import { IMessageSourceScopeRepository, addScopeIfDoesntExistAsync } from "../../Persistency/MessageSourceScopeRepository";
 import { WhatsAppMessagingUtils } from "../../Infra/Utilities/WhatsAppMessagingUtils";
-import { connectDestinationChatCommand, convertWhatsAppGroupIdToPersonGroupId } from "../../Infra/AzureFaceRecognition/FaceRecognitionContracts";
+import { connectDestinationChatCommand, convertWhatsAppGroupIdToPersonGroupId } from "../../Infra/FaceRecognitionClients/FaceRecognitionContracts";
 import { v4 as uuidv4 } from 'uuid';
+import { FaceRecognitionClient } from "../../Infra/FaceRecognitionClients/FaceRecognitionClient";
 
 export type FaceManagementCommand = 'add' | 'delete' | 'delete_all';
 
-export const getCommandHandlers = (faceRecognitionClient: AzureFaceRecognitionClient, recognizedFaceRepo: IRecognizedFaceRepository, scopesRepo: IMessageSourceScopeRepository) => 
+export const getCommandHandlers = (faceRecognitionClient: FaceRecognitionClient, recognizedFaceRepo: IRecognizedFaceRepository, scopesRepo: IMessageSourceScopeRepository) => 
 {
     let commandHandlers = new Map<FaceManagementCommand, IFaceRecognitionManagementCommandHandler>();
 
@@ -30,7 +30,7 @@ export interface IFaceRecognitionManagementCommandHandler {
 }
 
 export class AddCommandHandler implements IFaceRecognitionManagementCommandHandler {
-    constructor(faceRecognitionClient: AzureFaceRecognitionClient, recognizedFaceRepo: IRecognizedFaceRepository, scopesRepo: IMessageSourceScopeRepository) {
+    constructor(faceRecognitionClient: FaceRecognitionClient, recognizedFaceRepo: IRecognizedFaceRepository, scopesRepo: IMessageSourceScopeRepository) {
         this._faceRepo = recognizedFaceRepo;
         this._faceClient = faceRecognitionClient;
         this._scopesRepo = scopesRepo;
@@ -68,8 +68,7 @@ export class AddCommandHandler implements IFaceRecognitionManagementCommandHandl
 
         const authCode = destinationWhatsAppId ? null as unknown as string : uuidv4();
         const personGroupId = convertWhatsAppGroupIdToPersonGroupId(sourceWhatsAppId);
-        await this._faceClient.createPersonGroupIfNotExistAsync(personGroupId);
-        const faceId = await this._faceClient.createPersonInPersonGroupAsync(personGroupId);
+        const faceId = await this._faceClient.createFaceAsync(personGroupId);
 
         const newRecognizedFace: RecognizedFace = {
             authCode,
@@ -89,11 +88,11 @@ export class AddCommandHandler implements IFaceRecognitionManagementCommandHandl
 
     private _faceRepo: IRecognizedFaceRepository;
     private _scopesRepo: IMessageSourceScopeRepository;
-    private _faceClient: AzureFaceRecognitionClient;
+    private _faceClient: FaceRecognitionClient;
 }
 
 export class DeleteCommandHandler implements IFaceRecognitionManagementCommandHandler {
-    constructor(faceRecognitionClient: AzureFaceRecognitionClient, recognizedFaceRepo: IRecognizedFaceRepository, scopesRepo: IMessageSourceScopeRepository) {
+    constructor(faceRecognitionClient: FaceRecognitionClient, recognizedFaceRepo: IRecognizedFaceRepository, scopesRepo: IMessageSourceScopeRepository) {
         this._faceRepo = recognizedFaceRepo;
         this._faceClient = faceRecognitionClient;
         this._scopesRepo = scopesRepo;
@@ -145,11 +144,11 @@ export class DeleteCommandHandler implements IFaceRecognitionManagementCommandHa
 
     private _faceRepo: IRecognizedFaceRepository;
     private _scopesRepo: IMessageSourceScopeRepository;
-    private _faceClient: AzureFaceRecognitionClient;
+    private _faceClient: FaceRecognitionClient;
 }
 
 export class DeleteAllCommandHandler implements IFaceRecognitionManagementCommandHandler {
-    constructor(recognizedFaceRepo: IRecognizedFaceRepository, deleteCommandHandler: DeleteCommandHandler, faceClient: AzureFaceRecognitionClient) {
+    constructor(recognizedFaceRepo: IRecognizedFaceRepository, deleteCommandHandler: DeleteCommandHandler, faceClient: FaceRecognitionClient) {
         this._faceRepo = recognizedFaceRepo;
         this._faceClient = faceClient;
         this._deleteCommandHandler = deleteCommandHandler;
@@ -169,14 +168,10 @@ export class DeleteAllCommandHandler implements IFaceRecognitionManagementComman
             await this._deleteCommandHandler.deleteAsync(recognizedFace.ownerWhatsAppId, recognizedFace.faceName);
         }
 
-        let groups = await this._faceClient.getGroupsAsync();
-
-        for (let group of groups) {
-            await this._faceClient.deleteGroupAsync(group.personGroupId);
-        }
+        await this._faceClient.deleteAllAsync();
     }
 
     private _faceRepo: IRecognizedFaceRepository;
-    private _faceClient: AzureFaceRecognitionClient;
+    private _faceClient: FaceRecognitionClient;
     private _deleteCommandHandler: DeleteCommandHandler;
 }

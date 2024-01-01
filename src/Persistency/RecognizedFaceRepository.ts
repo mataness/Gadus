@@ -4,7 +4,7 @@ import { AzStorageTableClient } from "../Infra/AzureStorage/AzStorageTableClient
 
 export const getRecognizedFaceRepositoryAsync = async () => {
     let repo = new RecognizedFaceRepository();
-    await repo.createTableAsync();
+    await repo.initializeAsync();
 
     return new MemCacheRecognizedFaceRepository(repo);
 };
@@ -112,11 +112,11 @@ export class MemCacheRecognizedFaceRepository implements IRecognizedFaceReposito
 
 export class RecognizedFaceRepository implements IRecognizedFaceRepository {
     constructor() {
-        this._tableClient = new AzStorageTableClient("faces");
+        this._tableClient = new AzStorageTableClient("recognizedfaces");
     }
 
-    public async createTableAsync() {
-        return await this._tableClient.createTableAsync();
+    public async initializeAsync() {
+        await this._tableClient.createTableAsync();
     }
 
     public async addOrUpdateAsync(face: RecognizedFace) {
@@ -150,5 +150,5 @@ export class RecognizedFaceRepository implements IRecognizedFaceRepository {
         await this._tableClient.deleteAsync(ownerWhatsAppId, faceName);
     }
 
-    private _tableClient: AzStorageTableClient<RecognizedFace>;
+    private readonly _tableClient: AzStorageTableClient<RecognizedFace>;
 }

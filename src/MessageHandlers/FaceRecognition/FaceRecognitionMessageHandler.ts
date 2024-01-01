@@ -2,13 +2,12 @@ import { Message } from "whatsapp-web.js";
 import { IRecognizedFaceRepository } from "../../Persistency/RecognizedFaceRepository";
 import { MessageSourceScope } from "../../Persistency/MessageSourceScopeRepository";
 import { IWhatsAppMessageHandler } from "../IWhatsAppMessageHandler";
-import { AzureFaceRecognitionClient } from "../../Infra/AzureFaceRecognition/AzureFaceRecognitionClient";
-import { convertWhatsAppGroupIdToPersonGroupId } from "../../Infra/AzureFaceRecognition/FaceRecognitionContracts";
-import { createReadStream } from "streamifier";
+import { convertWhatsAppGroupIdToPersonGroupId } from "../../Infra/FaceRecognitionClients/FaceRecognitionContracts";
 import { WhatsAppClient } from "../../Infra/WhatsApp/WhatsAppClient";
+import { FaceRecognitionClient } from "../../Infra/FaceRecognitionClients/FaceRecognitionClient";
 
 export class FaceRecognitionMessageHandler implements IWhatsAppMessageHandler {
-    constructor(faceRecognitionClient: AzureFaceRecognitionClient, recognizedFaceRepo: IRecognizedFaceRepository) {
+    constructor(faceRecognitionClient: FaceRecognitionClient, recognizedFaceRepo: IRecognizedFaceRepository) {
         this._faceRepo = recognizedFaceRepo;
         this._faceClient = faceRecognitionClient;
     }
@@ -26,7 +25,6 @@ export class FaceRecognitionMessageHandler implements IWhatsAppMessageHandler {
 
         const messageSource = message.from;
         let buffer = Buffer.from(attachmentData.data, 'base64');
-        let stream = createReadStream(buffer);
 
         const associatedFaces = await this._faceRepo.listBySourceAsync(messageSource);
 
@@ -35,7 +33,7 @@ export class FaceRecognitionMessageHandler implements IWhatsAppMessageHandler {
             return true;
         }
 
-        const detectedFaces = await this._faceClient.detectAsync(stream, convertWhatsAppGroupIdToPersonGroupId(messageSource));
+        const detectedFaces = await this._faceClient.detectAsync(buffer, convertWhatsAppGroupIdToPersonGroupId(messageSource));
 
         if (detectedFaces.length == 0) {
             return true;
@@ -60,5 +58,5 @@ export class FaceRecognitionMessageHandler implements IWhatsAppMessageHandler {
     }
 
     private _faceRepo: IRecognizedFaceRepository;
-    private _faceClient: AzureFaceRecognitionClient;
+    private _faceClient: FaceRecognitionClient;
 }

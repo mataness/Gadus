@@ -75,7 +75,7 @@ export class ApiService {
 
     private addFaceApi() {
         this._app.get('/api/faces', async (req, res) => {
-            const facesRepo = await getRecognizedFaceRepositoryAsync();
+            const facesRepo = this._botStartupResult.facesRepo;
 
             let allFaces = await facesRepo.listAllAsync();
             let faces = await this.mapToFaceResponseModel(allFaces, this._botStartupResult.whatsAppClient);
@@ -112,7 +112,7 @@ export class ApiService {
             console.log("Starting bot");
 
             if (!this._botStartupResult) {
-                BotService.startAsync(this._parameters, qrReceived => this._qr = qrReceived, (result) => this._botStartupResult = result);
+                await BotService.startAsync(this._parameters, qrReceived => this._qr = qrReceived, (result) => this._botStartupResult = result);
             }
 
             while (!this._qr && (!this._botStartupResult || !this._botStartupResult.usedCachedAuthentication)) {

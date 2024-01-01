@@ -1,14 +1,13 @@
-import { createReadStream } from "streamifier";
 import { Message } from "whatsapp-web.js";
 import { IRecognizedFaceRepository } from "../../Persistency/RecognizedFaceRepository";
 import { MessageSourceScope } from "../../Persistency/MessageSourceScopeRepository";
 import { IWhatsAppMessageHandler } from "../IWhatsAppMessageHandler";
-import { AzureFaceRecognitionClient } from "../../Infra/AzureFaceRecognition/AzureFaceRecognitionClient";
-import { convertWhatsAppGroupIdToPersonGroupId } from "../../Infra/AzureFaceRecognition/FaceRecognitionContracts";
+import { convertWhatsAppGroupIdToPersonGroupId } from "../../Infra/FaceRecognitionClients/FaceRecognitionContracts";
 import { WhatsAppMessagingUtils } from '../../Infra/Utilities/WhatsAppMessagingUtils';
+import { FaceRecognitionClient } from "../../Infra/FaceRecognitionClients/FaceRecognitionClient";
 
 export class FaceRecognitionTrainingMessageHandler implements IWhatsAppMessageHandler {
-    constructor(faceRecognitionClient: AzureFaceRecognitionClient, recognizedFaceRepo: IRecognizedFaceRepository) {
+    constructor(faceRecognitionClient: FaceRecognitionClient, recognizedFaceRepo: IRecognizedFaceRepository) {
         this._faceRepo = recognizedFaceRepo;
         this._faceClient = faceRecognitionClient;
     }
@@ -38,10 +37,13 @@ export class FaceRecognitionTrainingMessageHandler implements IWhatsAppMessageHa
             if (faces && !faces.includes(recognizedFace.faceName)) {
                 continue;
             }
-            let stream = createReadStream(buffer);
 
             trainedFaces.push(recognizedFace.faceName);
-            await this._faceClient.trainAsync(convertWhatsAppGroupIdToPersonGroupId(recognizedFace.sourceWhatsAppId!), recognizedFace.faceId!, stream);
+            if(!await this._faceClient.trainAsync(convertWhatsAppGroupIdToPersonGroupId(recognizedFace.sourceWhatsAppId!), recognizedFace.faceId!, buffer)) {
+                await WhatsAppMessagingUtils.setTypingAndReplyAsync(message, `Failed to detect face in image`, 2 * 1000);
+
+                return true;
+            }
         }
 
         await WhatsAppMessagingUtils.setTypingAndReplyAsync(message, `Trained ${trainedFaces.length} faces: ${trainedFaces.join(", ")} `, 2 * 1000);
@@ -50,6 +52,6 @@ export class FaceRecognitionTrainingMessageHandler implements IWhatsAppMessageHa
     }
 
     private _faceRepo: IRecognizedFaceRepository;
-    private _faceClient: AzureFaceRecognitionClient;
+    private _faceClient: FaceRecognitionClient;
 }
 

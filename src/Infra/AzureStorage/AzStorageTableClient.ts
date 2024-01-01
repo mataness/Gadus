@@ -1,13 +1,9 @@
-import { TableClient, AzureNamedKeyCredential, odata, TableEntity } from "@azure/data-tables";
-
-let credentials: AzureNamedKeyCredential;
-export const initializeStorageService = (storageAccountName: string, storageKey: string) => {
-    credentials = new AzureNamedKeyCredential(storageAccountName, storageKey);
-}
+import { TableClient, odata, TableEntity } from "@azure/data-tables";
+import { AzStorageClients } from "./AzStorageClients";
 
 export class AzStorageTableClient<T extends TableEntity> {
     constructor(tableName: string) {
-        this._tableClient = new TableClient(`https://${credentials.name}.table.core.windows.net`, tableName, credentials);
+        this._tableClient = AzStorageClients.getTableClientClient(tableName);
     }
 
     public async createTableAsync() {
@@ -15,6 +11,16 @@ export class AzStorageTableClient<T extends TableEntity> {
     }
     public async addOrUpdateAsync(entity: T) {
         await this._tableClient.upsertEntity(entity, 'Replace');
+    }
+
+    public async updateAsync(entity: T, etag: string | undefined) {
+        const options = {
+            etag: etag
+          };
+
+        let result = await this._tableClient.updateEntity(entity, undefined, options);
+
+        return result.etag!;
     }
 
     public async addAsync(entity: T) {

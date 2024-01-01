@@ -1,6 +1,4 @@
 import { exit } from "process";
-import { AzureFaceRecognitionClient } from "./Infra/AzureFaceRecognition/AzureFaceRecognitionClient";
-import { initializeStorageService } from "./Infra/AzureStorage/AzStorageTableClient";
 import { WhatsAppClient } from "./Infra/WhatsApp/WhatsAppClient";
 import { CompositeMessageHandler } from "./MessageHandlers/CompositeMessageHandler";
 import { FaceRecognitionDestinationHandshakeMessageHandler } from "./MessageHandlers/FaceRecognition/FaceRecognitionDestinationHandshakeMessageHandler";
@@ -12,14 +10,18 @@ import { IMessageSourceScopeRepository, getMessageSourceScopeRepository } from "
 import { IRecognizedFaceRepository, getRecognizedFaceRepositoryAsync } from "./Persistency/RecognizedFaceRepository";
 import { Client } from "whatsapp-web.js";
 import { FaceManagementCommand, IFaceRecognitionManagementCommandHandler, getCommandHandlers } from "./MessageHandlers/FaceRecognition/FaceRecognitionManagementCommandHandler";
+import { getFaceDescriptorRepositoryAsync } from "./Persistency/FaceDescriptorRepository";
+import { AzStorageClients } from "./Infra/AzureStorage/AzStorageClients";
+import { createCreateFaceRecognitionClientAsync } from "./Infra/FaceRecognitionClients/FaceRecognitionClientFactory";
 
 
 
 export interface BotStartupParameters {
-    AzureFaceApiKey: string;
-    AzureFaceEndoint: string;
+    AzureFaceApiKey?: string;
+    AzureFaceEndoint?: string;
     AzureStorageAccountName: string;
     AzureStorageAccountKey: string;
+    StartApiService : boolean
 }
 
 export interface BotStartupResult {
@@ -33,12 +35,17 @@ export interface BotStartupResult {
 export class BotService {
     public static async startAsync(parameters: BotStartupParameters, onQrReceived: (qr: string) => void, onReady: (startupResult: BotStartupResult) => void) {
         let qrGenerated = false;
-        initializeStorageService(parameters.AzureStorageAccountName, parameters.AzureStorageAccountKey);
+        AzStorageClients.initialize(parameters.AzureStorageAccountName, parameters.AzureStorageAccountKey);
+        let faceDescriptorsRepo = await getFaceDescriptorRepositoryAsync();
+        let faceRecognitionClient = await createCreateFaceRecognitionClientAsync(faceDescriptorsRepo, {
+            azureFaceApiEndpoint: parameters.AzureFaceEndoint,
+            azureFaceApiKey: parameters.AzureFaceApiKey
+        });
 
         let whatsAppClient = WhatsAppClient.getInstance();
         let facesRepo = await getRecognizedFaceRepositoryAsync();
         let scopesRepo = await getMessageSourceScopeRepository();
-        let faceRecognitionClient = new AzureFaceRecognitionClient(parameters.AzureFaceEndoint, parameters.AzureFaceApiKey);
+
         let commandHandlers = getCommandHandlers(faceRecognitionClient, facesRepo, scopesRepo);
         let faceMgmtHandler = new FaceRecognitionManagementMessageHandler(commandHandlers);
 
@@ -86,7 +93,6 @@ export class BotService {
     public static async getBotStateAsync() {
         return await WhatsAppClient.getInstance().getState();
     }
-
 }
 
 

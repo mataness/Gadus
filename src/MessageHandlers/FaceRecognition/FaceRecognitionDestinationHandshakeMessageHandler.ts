@@ -2,7 +2,7 @@ import { Message } from "whatsapp-web.js";
 import { IRecognizedFaceRepository } from "../../Persistency/RecognizedFaceRepository";
 import { MessageSourceScope } from "../../Persistency/MessageSourceScopeRepository";
 import { IWhatsAppMessageHandler } from "../IWhatsAppMessageHandler";
-import { connectDestinationChatCommand } from "../../Infra/AzureFaceRecognition/FaceRecognitionContracts";
+import { connectDestinationChatCommand } from "../../Infra/FaceRecognitionClients/FaceRecognitionContracts";
 import { WhatsAppMessagingUtils } from '../../Infra/Utilities/WhatsAppMessagingUtils';
 
 export class FaceRecognitionDestinationHandshakeMessageHandler implements IWhatsAppMessageHandler {

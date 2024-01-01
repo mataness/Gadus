@@ -4,7 +4,9 @@ export class WhatsAppClient {
     public static getInstance() {
         if (!this._client) {
             this._client = new Client({
-                authStrategy: new LocalAuth(),
+                authStrategy: new LocalAuth({
+                    dataPath: "/opt/whatsapp_auth"
+                }),
                 puppeteer: {
                     args: ['--no-sandbox', "--disabled-setupid-sandbox"]
                 }
