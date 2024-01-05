@@ -21,7 +21,7 @@ export interface BotStartupParameters {
     AzureFaceEndoint?: string;
     AzureStorageAccountName: string;
     AzureStorageAccountKey: string;
-    StartApiService : boolean
+    StartApiService: boolean
 }
 
 export interface BotStartupResult {
@@ -29,7 +29,7 @@ export interface BotStartupResult {
     scopesRepo: IMessageSourceScopeRepository;
     facesRepo: IRecognizedFaceRepository;
     usedCachedAuthentication: boolean;
-    whatsAppClient : Client;
+    whatsAppClient: Client;
 }
 
 export class BotService {
@@ -58,7 +58,12 @@ export class BotService {
 
         whatsAppClient.on('message_create', async message => {
             try {
-                let scope = await scopesRepo.getAsync(message.from);
+                if (!message) {
+                    return;
+                }
+
+                let chat = await message.getChat();
+                let scope = await scopesRepo.getAsync(chat.id._serialized);
                 await messageHandler.handleAsync(message, scope);
             } catch (error: any) {
                 console.log("An error has occured while handling message. Error: " + error);
@@ -94,5 +99,3 @@ export class BotService {
         return await WhatsAppClient.getInstance().getState();
     }
 }
-
-
