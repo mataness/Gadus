@@ -115,7 +115,9 @@ export class TensorFlowFaceRecognitionClient implements FaceRecognitionClient {
     private async getGroupFaceMatcherAsync(groupId: string) {
         let faces = await this._descriptorsRepository.listByGroupAsync(groupId);
 
-        let facesDescriptors = faces.map(face => LabeledFaceDescriptors.fromJSON(JSON.parse(face.descriptor)));
+        let facesDescriptors = faces
+        .map(face => LabeledFaceDescriptors.fromJSON(JSON.parse(face.descriptor)))
+        .filter(d => d.descriptors.length > 0);
 
         return new FaceMatcher(facesDescriptors, 0.43);
     }
