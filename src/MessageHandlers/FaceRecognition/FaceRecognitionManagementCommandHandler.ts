@@ -68,6 +68,7 @@ export class AddCommandHandler implements IFaceRecognitionManagementCommandHandl
 
         const authCode = destinationWhatsAppId ? null as unknown as string : uuidv4();
         const personGroupId = convertWhatsAppGroupIdToPersonGroupId(sourceWhatsAppId);
+        await this._faceClient.createGroupIfNotExistAsync(personGroupId);
         const faceId = await this._faceClient.createFaceAsync(personGroupId);
 
         const newRecognizedFace: RecognizedFace = {
