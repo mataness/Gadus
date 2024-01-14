@@ -5,6 +5,7 @@ import { IWhatsAppMessageHandler } from "../IWhatsAppMessageHandler";
 import { convertWhatsAppGroupIdToPersonGroupId } from "../../Infra/FaceRecognitionClients/FaceRecognitionContracts";
 import { WhatsAppClient } from "../../Infra/WhatsApp/WhatsAppClient";
 import { FaceRecognitionClient } from "../../Infra/FaceRecognitionClients/FaceRecognitionClient";
+import { WhatsAppMessagingUtils } from "../../Infra/Utilities/WhatsAppMessagingUtils";
 
 export class FaceRecognitionMessageHandler implements IWhatsAppMessageHandler {
     constructor(faceRecognitionClient: FaceRecognitionClient, recognizedFaceRepo: IRecognizedFaceRepository) {
@@ -23,7 +24,7 @@ export class FaceRecognitionMessageHandler implements IWhatsAppMessageHandler {
             return true;
         }
 
-        const messageSource = message.from;
+        const messageSource = await WhatsAppMessagingUtils.getMessageScopeAsync(message);
         let buffer = Buffer.from(attachmentData.data, 'base64');
 
         const associatedFaces = await this._faceRepo.listBySourceAsync(messageSource);

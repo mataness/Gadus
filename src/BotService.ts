@@ -13,6 +13,7 @@ import { FaceManagementCommand, IFaceRecognitionManagementCommandHandler, getCom
 import { getFaceDescriptorRepositoryAsync } from "./Persistency/FaceDescriptorRepository";
 import { AzStorageClients } from "./Infra/AzureStorage/AzStorageClients";
 import { createCreateFaceRecognitionClientAsync } from "./Infra/FaceRecognitionClients/FaceRecognitionClientFactory";
+import { WhatsAppMessagingUtils } from "./Infra/Utilities/WhatsAppMessagingUtils";
 
 
 
@@ -62,8 +63,8 @@ export class BotService {
                     return;
                 }
 
-                let chat = await message.getChat();
-                let scope = await scopesRepo.getAsync(chat.id._serialized);
+                let messageScope = await WhatsAppMessagingUtils.getMessageScopeAsync(message);
+                let scope = await scopesRepo.getAsync(messageScope);
                 await messageHandler.handleAsync(message, scope);
             } catch (error: any) {
                 console.log("An error has occured while handling message. Error: " + error);
@@ -99,3 +100,5 @@ export class BotService {
         return await WhatsAppClient.getInstance().getState();
     }
 }
+
+

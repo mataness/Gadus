@@ -10,6 +10,10 @@ export class WhatsAppMessagingUtils {
         return number + "@c.us";
     }
 
+    public static async getMessageScopeAsync(message: Message) {
+        return (await message.getChat()).id._serialized;
+    }
+
     public static getWhatsAppNumberFromId(number : string) {
         return number.split("@")[0];
     }
