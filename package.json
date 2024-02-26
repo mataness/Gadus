@@ -12,17 +12,17 @@
     "@azure/cognitiveservices-face": "^5.0.0",
     "@azure/data-tables": "^13.2.2",
     "@azure/storage-blob": "^12.17.0",
-    "@tensorflow/tfjs-node": "^4.14.0",
     "@vladmandic/face-api": "^1.7.12",
     "async-lock": "^1.4.0",
     "bottleneck": "^2.19.5",
     "canvas": "^2.11.2",
+    "@tensorflow/tfjs-node": "^4.14.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "lz-string": "^1.5.0",
     "memory-cache": "^0.2.0",
     "streamifier": "^0.1.1",
-    "whatsapp-web.js": "github:alechkos/whatsapp-web.js#forward-with-caption"
+    "whatsapp-web.js": "https://github.com/alechkos/whatsapp-web.js#forward-with-caption"
   },
   "devDependencies": {
     "@types/express": "^4.17.17",
